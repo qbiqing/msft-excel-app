@@ -17,7 +17,8 @@ Office.onReady((info) => {
     document.getElementById("create-table").onclick = createTable;
     document.getElementById("filter-table").onclick = filterTable;
     document.getElementById("sort-table").onclick = sortTable;
-    
+    document.getElementById("get-mean-award").onclick = getMeanAward;
+
     document.getElementById("sideload-msg").style.display = "none";
     document.getElementById("app-body").style.display = "flex";
     document.getElementById("run").onclick = run;
@@ -113,6 +114,30 @@ function sortTable() {
     ];
     expensesTable.sort.apply(sortFields);
 
+    return context.sync();
+  })
+  .catch(function (error) {
+    console.log("Error: " + error);
+    if (error instanceof OfficeExtension.Error) {
+      console.log("Debug info: " + JSON.stringify(error.debugInfo));
+    }
+  });
+}
+
+
+function getMeanAward() {
+  Excel.run(function (context) {
+    var currentWorksheet = context.workbook.worksheets.getActiveWorksheet();
+    var procurementTable = currentWorksheet.tables.getItemAtIndex(0);
+    var agencyFilter = procurementTable.columns.getItem('agency').filter;
+    agencyFilter.applyValuesFilter([
+      'Attorney-General\'s Chambers'
+    ]);
+
+    var awardAmount = procurementTable.columns.getItem('award_amt').values;
+
+    var thisMean = ML.mean(awardAmount);
+    console.log(thisMean);
     return context.sync();
   })
   .catch(function (error) {
